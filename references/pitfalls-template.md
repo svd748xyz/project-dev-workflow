@@ -1,86 +1,86 @@
-# PITFALLS 模板
+# PITFALLS templates
 
-两种记录文件，按坑的适用范围选择（判断标准见 SKILL.md §7）：
+Two kinds of log, chosen by the scope of the pitfall (the criterion is in §7 of SKILL.md):
 
-| 文件 | 范围 | 是否进仓库 |
+| File | Scope | Committed |
 |---|---|---|
-| 项目根目录 `PITFALLS.md` | 项目级 | 是，随仓库提交 |
-| `~/.agents/PITFALLS.local.md` | 本机级 | 否 |
+| `PITFALLS.md` in the project root | project-level | yes, committed with the repository |
+| `~/.agents/PITFALLS.local.md` | machine-level | no |
 
-文件还不存在时，复制下面对应模板中 `---` 之间的内容创建，然后填入第一条。分类按实际情况增删，空分类可以删掉。
+If the file does not exist yet, copy the content between the `---` markers in the matching template below to create it, then fill in the first entry. Add or remove categories as the situation requires; empty categories may be deleted.
 
-## 项目级模板（PITFALLS.md）
-
----
-
-# 踩坑记录
-
-> 本项目开发中实际踩过的坑。开工前先读一遍；遇到新坑解决后立即追加；已有条目过时或不完整时直接修改原条目。
-> 状态：`已解决` / `未解决` / `已过时`（保留原因，移入"归档"，不删除）。
-> 只和某台机器有关的问题不写在这里，写到各自的 `~/.agents/PITFALLS.local.md`。
-
-<!-- 条目超过约 20 条时，在这里维护索引：- [分类] 标题 -->
-
-## 依赖与版本
-
-## 构建与部署
-
-## 代码与框架
-
-## 数据与接口
-
-## 项目约定
-
-## 归档
+## Project-level template (PITFALLS.md)
 
 ---
 
-## 本机级模板（~/.agents/PITFALLS.local.md）
+# Pitfall log
+
+> Problems actually hit during development of this project. Read it once before starting work; append new entries as soon as a problem is solved; edit an existing entry directly when it is out of date or incomplete.
+> Status: `solved` / `unsolved` / `obsolete` (keep the reason, move it to "Archive", do not delete).
+> Problems that concern only one machine do not belong here; they go to that machine's `~/.agents/PITFALLS.local.md`.
+
+<!-- Once the log exceeds ~20 entries, maintain an index here: - [category] title -->
+
+## Dependencies and versions
+
+## Build and deployment
+
+## Code and frameworks
+
+## Data and interfaces
+
+## Project conventions
+
+## Archive
 
 ---
 
-# 本机踩坑记录
-
-> 只和这台机器有关的问题（本地 shell、路径、工具安装、权限、网络代理）。不进任何仓库。
-
-## 环境与工具
-
-## 归档
+## Machine-level template (~/.agents/PITFALLS.local.md)
 
 ---
 
-## 条目格式
+# Local pitfall log
+
+> Problems that concern only this machine (local shell, paths, tool installation, permissions, network proxy). Never committed to any repository.
+
+## Environment and tooling
+
+## Archive
+
+---
+
+## Entry format
 
 ```markdown
-### <一句话标题：说清楚"什么情况下会出什么问题">
-- 日期：YYYY-MM-DD ｜ 状态：已解决 ｜ 范围：项目级
-- 现象：<看到的报错、异常表现；关键报错原文可以摘一行>
-- 根因：<真正的原因，而不是表面症状>
-- 解决 / 规避：<具体怎么做；能给命令或代码就给>
-- 适用条件：<什么系统、版本、配置、场景下会触发>
-- 已排除的方向：<可选；未解决时尤其要写，避免别人重复尝试>
+### <one-line title: what problem occurs under what circumstances>
+- Date: YYYY-MM-DD | Status: solved | Scope: project-level
+- Symptom: <the error or abnormal behaviour observed; one line of the key error text if useful>
+- Root cause: <the actual cause, not the surface symptom>
+- Fix / workaround: <exactly what to do; give the command or the code when possible>
+- Applicability: <which OS, version, configuration, scenario triggers it>
+- Ruled out: <optional; especially important while unsolved, so others do not retry the same dead ends>
 ```
 
-## 示例
+## Examples
 
-项目级：
+Project-level:
 
 ```markdown
-### Vite 项目中前端读不到 .env 里的变量
-- 日期：2026-11-16 ｜ 状态：已解决 ｜ 范围：项目级
-- 现象：`.env` 里写了 `API_BASE=...`，前端代码中 `import.meta.env.API_BASE` 始终是 `undefined`，没有任何报错。
-- 根因：Vite 只会把以 `VITE_` 开头的变量暴露给客户端代码，其余变量被有意过滤，防止泄露服务端密钥。
-- 解决 / 规避：前端需要的变量统一改名为 `VITE_` 前缀（如 `VITE_API_BASE`）；修改 `.env` 后重启开发服务器。
-- 适用条件：使用 Vite 构建的前端项目，未自定义 `envPrefix`。
+### Frontend cannot read .env variables in a Vite project
+- Date: 2026-11-16 | Status: solved | Scope: project-level
+- Symptom: `API_BASE=...` is set in `.env`, but `import.meta.env.API_BASE` in frontend code is always `undefined`, with no error.
+- Root cause: Vite only exposes variables prefixed with `VITE_` to client code; all others are filtered deliberately to avoid leaking server-side secrets.
+- Fix / workaround: rename the variables the frontend needs with the `VITE_` prefix (e.g. `VITE_API_BASE`); restart the dev server after editing `.env`.
+- Applicability: frontend projects built with Vite, with no custom `envPrefix`.
 ```
 
-本机级：
+Machine-level:
 
 ```markdown
-### Windows 下 bash 指向损坏的 WSL，shell 命令全部失败
-- 日期：2026-11-16 ｜ 状态：已解决 ｜ 范围：本机级
-- 现象：执行任何 bash 命令都报 `Bash/Service/CreateInstance/MountDisk/HCS/ERROR_FILE_NOT_FOUND`。
-- 根因：系统 PATH 中的 bash 是 WSL 启动器，而对应的 WSL 发行版磁盘文件 ext4.vhdx 已被删除。
-- 解决 / 规避：改用 PowerShell 执行命令；或修复 / 注销该 WSL 发行版，或安装 Git Bash 并让它排在 PATH 前面。
-- 适用条件：Windows，安装过 WSL 但发行版已损坏或被删除。
+### bash points to a broken WSL install on Windows and every shell command fails
+- Date: 2026-11-16 | Status: solved | Scope: machine-level
+- Symptom: every bash command fails with `Bash/Service/CreateInstance/MountDisk/HCS/ERROR_FILE_NOT_FOUND`.
+- Root cause: the bash on PATH is the WSL launcher, and the disk file ext4.vhdx of the corresponding WSL distribution has been deleted.
+- Fix / workaround: use PowerShell instead; or repair / unregister that WSL distribution, or install Git Bash and put it ahead of WSL on PATH.
+- Applicability: Windows, where WSL was installed but the distribution is corrupted or deleted.
 ```

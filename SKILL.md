@@ -1,277 +1,277 @@
 ---
 name: project-dev-workflow
-description: 项目开发纪律：复述需求、经用户确认后再动手；拆成带可检查完成条件的阶段逐层验收（必要时交独立验收子代理）；关键决策先经子代理或自我反驳挑刺再定；范围内主动推进、范围外主动提议；踩坑实时写入 PITFALLS.md。Use when starting or continuing non-trivial development work — multi-step features, bugs spanning several steps, refactors, architecture or approach choices — even if the user does not name this skill. Also use for standalone requests such as "按流程来", "规范开发", "开始开发", "帮我做个", "实现一下", "验收一下", "挑挑刺", "评审方案", "记一下踩坑", "更新踩坑" (run only the matching section). Skip for pure Q&A and trivial one-line edits.
+description: Development discipline for projects — restate the request and get it confirmed before writing code; split work into layers with checkable completion criteria and verify each layer before starting the next (delegate to an independent verifier when warranted); subject key decisions to adversarial review by a subagent or by explicit self-refutation before committing to them; push forward autonomously within the confirmed scope and propose anything outside it; log every pitfall to PITFALLS.md as it is solved. Use when starting or continuing non-trivial development work — multi-step features, bugs spanning several steps, refactors, architecture or approach choices — even if the user does not name this skill. Also use for standalone requests such as "follow the workflow", "run this properly", "verify this", "critique this plan", "log this pitfall", "update the pitfalls" (Chinese aliases: 按流程来、规范开发、开始开发、帮我做个、实现一下、验收一下、挑挑刺、评审方案、记一下踩坑、更新踩坑), running only the matching section for those. Skip for pure Q&A and trivial one-line edits.
 metadata:
   version: "1.1.0"
 ---
 
 # Project Dev Workflow
 
-一套在项目开发中始终遵守的工作纪律。它要解决的问题是：AI 容易误解需求就开工、自己写完自己说"没问题"、只从一个角度论证自己的方案、只做被点名的事、踩过的坑下次再踩。
+A working discipline applied throughout a development project. It addresses these failures: an AI starts coding on a misread request; finishes writing and then declares its own work fine; argues for a design from a single viewpoint; does only what it was told; and repeats a pitfall it already hit last time.
 
-纪律的分量要和任务的分量相称：小任务走轻量档，不要为了流程而流程。
+The weight of the discipline should match the weight of the task: small tasks take the light tier — do not run a process for the process's sake.
 
-整个流程：
+The whole workflow:
 
 ```
-入口：单项调用路由 / 判断档位（轻量 · 标准）/ 是否自主执行
-0. 开工前       —— 读踩坑记录与项目规则，确认工作区状态
-1. 理解与确认   —— 复述需求，用户确认后才动手
-2. 分层计划     —— 每层写清可检查的完成条件
-3. 逐层执行与验收 —— 自己或验收子代理按条件核验，不过不进下一层
-4. 收尾汇报     —— 证据、未验证项、采纳/驳回的批评、建议、新增踩坑
-贯穿全程：决策挑刺（§5）、主动推进（§6）、踩坑实时记录（§7）
+Entry: single-section routing / tier decision (light · standard) / whether to work autonomously
+0. Preflight      — read the pitfall log and project rules, confirm workspace state
+1. Understand     — restate the request; act only after the user confirms
+2. Plan           — split into layers, each with checkable completion criteria
+3. Execute & verify — verify each layer by the criteria, self or via verifier; no pass, no next layer
+4. Report         — evidence, unverified items, accepted/rejected critiques, suggestions, new pitfalls
+Throughout: adversarial review (§5), proactive execution (§6), real-time pitfall logging (§7)
 ```
 
-## 入口：先判断怎么用
+## Entry: decide how to use it
 
-### 单项调用
+### Single-section invocation
 
-用户只点名某一个环节时，只执行对应章节，不要套用整套流程：
+When the user names one stage only, execute that section alone; do not run the whole workflow:
 
-| 用户说 | 执行 |
+| User says | Execute |
 |---|---|
-| 挑挑刺 / 评审方案 / 这个方案行不行 | 只做 §5 |
-| 验收一下 / 检查一下做得对不对 | 只做 §3 的验收。对象是用户指定的成果；完成条件不明确时，先和用户对齐条件再验 |
-| 记一下踩坑 / 更新踩坑 | 只做 §7 |
-| 按流程来 / 规范开发 | 完整流程（按标准档） |
+| critique / review this plan / is this approach OK | §5 only |
+| verify this / check whether it's correct | §3 verification only. The object is what the user specified; if the completion criteria are unclear, align on them with the user before verifying |
+| log this pitfall / update the pitfalls | §7 only |
+| follow the workflow / run this properly | the full workflow (standard tier) |
 
-### 轻量档与标准档
+### Light and standard tiers
 
-开工前先判断档位，并在第一次回复里用一句话说明选了哪档。
+Decide the tier before starting, and state which one you picked in one line in your first reply.
 
-**轻量档**：下面三条同时满足——
-- 需求明确，只有一种合理解读；
-- 可以轻松回滚，不涉及删除数据、公共接口、对外影响；
-- 改动集中（一个功能点、少量文件），一个验证步骤就能判定结果。
+**Light tier** — all three conditions hold:
+- the request is unambiguous, with only one reasonable reading;
+- it can be rolled back easily, with no data deletion, public interfaces, or external impact;
+- the change is concentrated (one feature point, few files) and a single verification step decides the result.
 
-轻量档不复述、不分层、不派子代理，但仍然遵守：§0 开工前、§3 证据规则、§7 踩坑记录，收尾用 §4 的精简汇报。
+The light tier skips restatement, layering and subagents, but still observes §0 preflight, the §3 evidence rules, and §7 pitfall logging, and closes with the short §4 report.
 
-**标准档**：其余情况，走完整的 0–7。拿不准时按标准档处理。
+**Standard tier**: everything else. When unsure, use the standard tier.
 
-执行中发现轻量档任务其实更复杂（牵出其他模块、冒出歧义、需要不可逆操作）：立刻升级为标准档，补做复述确认。
+If a light-tier task turns out to be more complex than judged (it drags in other modules, ambiguity appears, an irreversible operation is needed): upgrade to the standard tier immediately and do the restatement and confirmation retroactively.
 
-### 自主执行模式
+### Autonomous mode
 
-用户明确说"直接做 / 不用问我 / 你自己定"，或者当前是无人值守的长任务、非交互环境时：
+When the user explicitly says "just do it / don't ask me / you decide", or the task is an unattended long run in a non-interactive environment:
 
-- §1 照样写出"我的理解"，但不等确认。"需要你定的"各项按推荐选项自行决定，记为**自主决定的假设**，然后直接推进；
-- 不可逆或有外部影响的操作（删除数据、部署、推送、数据迁移、付费调用）仍然**不做**，跳过并列入汇报，等用户回来决定；
-- 收尾汇报集中列出全部自主决定的假设，方便用户事后纠正。
+- §1 still writes out "my understanding", but does not wait for confirmation. Each item under "decisions I need from you" is decided by taking the recommended option, recorded as a **self-made assumption**, and work proceeds;
+- operations that are irreversible or have external impact (deleting data, deploying, pushing, data migration, paid API calls) are still **not** performed; skip them, list them in the report, and leave them for the user;
+- the final report lists every self-made assumption together, so the user can correct them afterwards.
 
-## 0. 开工前
+## 0. Preflight
 
-- **踩坑记录**：项目根目录有 `PITFALLS.md` 时，先读再做计划；文件顶部有索引的，先读索引，再读与当前任务相关的条目。本机级记录 `~/.agents/PITFALLS.local.md` 存在时也读一遍（见 §7 适用范围）。与当前任务相关的条目，在复述或计划里点名提一句。
-- **项目规则**：项目里有 `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md` 之类的规则文件时，同样遵守。
-- **工作区状态**：项目是 git 仓库时，先看 `git status`。已经存在的未提交改动是用户的，记住它们，后续不要覆盖，也不要混进自己的改动里。不是 git 仓库、而改动风险又较高时，先提醒用户，或者先备份要改的文件。
+- **Pitfall log**: if the project root has `PITFALLS.md`, read it before planning; if the file maintains an index at the top, read the index first, then the entries relevant to the current task. If a machine-level log at `~/.agents/PITFALLS.local.md` exists, read that too (see §7 for scope). Mention task-relevant entries by name in the restatement or the plan.
+- **Project rules**: if the project has `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md` or similar rule files, follow them as well.
+- **Workspace state**: if the project is a git repository, check `git status` first. Uncommitted changes that already exist belong to the user: remember them, do not overwrite them, and do not mix them into your own changes. If it is not a git repository and the change is risky, warn the user first, or back up the files you are about to modify.
 
-## 1. 理解与确认
+## 1. Understand and confirm
 
-用户的原话往往省略了上下文、混合了目标和手段、隐含了没说出口的约束。直接按字面开工，做错的代价远大于多问一轮。
+The user's wording usually omits context, mixes goals with means, and leaves constraints unstated. Coding to the literal wording and getting it wrong costs far more than one extra round of questions.
 
-### 什么时候必须复述确认
+### When restatement and confirmation are mandatory
 
-满足任一条就必须先复述、等用户确认（自主执行模式除外）：
-- 需求存在两种以上合理解读，且不同解读会导致明显不同的产出；
-- 用户给的是目标而非具体指令（"把登录做得好用点"）；
-- 涉及不可逆操作、对外影响、删除数据、改公共接口或数据模型；
-- 改动跨多个模块，或者工作量大到一旦做偏，返工代价很高。
+Any one of these makes restatement and confirmation mandatory (except in autonomous mode):
+- the request has two or more reasonable readings, and the readings lead to materially different outputs;
+- the user gave a goal rather than an instruction ("make login nicer");
+- the work involves irreversible operations, external impact, data deletion, or changes to public interfaces or the data model;
+- the change spans multiple modules, or is large enough that going in the wrong direction is expensive to undo.
 
-符合轻量档的任务可以直接做，做完说明即可。拿不准时按"必须确认"处理。
+Light-tier tasks may be done directly, with an explanation afterwards. When unsure, treat it as "confirmation required".
 
-### 确认之前能做什么
+### What you may do before confirmation
 
-可以做功课：读代码和文档、运行只读命令（查看状态、跑现有测试、查版本）。不能做的：修改文件、安装依赖、改配置、执行任何有副作用的命令。
+You may do homework: read code and documentation, run read-only commands (inspect state, run existing tests, check versions). You may not: modify files, install dependencies, change configuration, or run any command with side effects.
 
-### 复述格式
+### Restatement format
 
-先做功课再复述——复述是用自己的话重构需求，不是复读原话。暴露你的假设，让用户能一眼看出你哪里理解偏了。
+Do the homework before restating. A restatement reconstructs the requirement in your own words; it is not a recital of the user's sentence. Expose your assumptions so the user can see at a glance where you have it wrong.
 
 ```markdown
-**我的理解**
-- 目标：<要解决的问题 / 要达成的效果，一两句话>
-- 交付物：<最终会产出什么：文件、功能、文档……>
-- 范围内：<会做的>
-- 范围外：<明确不做的，防止范围蔓延>
-- 约束：<技术栈、风格、不能动的地方、时间/资源限制>
-- 验收标准：<用户怎样判断"做好了"，尽量可观察>
-- 我的假设：<没被明说、我自行推断的点>
+**My understanding**
+- Goal: <the problem to solve / the effect to achieve, one or two sentences>
+- Deliverables: <what will exist at the end: files, features, documents…>
+- In scope: <what you will do>
+- Out of scope: <what you explicitly will not do, to prevent scope creep>
+- Constraints: <stack, style, areas not to touch, time/resource limits>
+- Acceptance criteria: <how the user will decide it is done, as observable as possible>
+- My assumptions: <points not stated that you inferred yourself>
 
-**需要你定的**
-1. <问题>？选项 A：… / 选项 B：…（我倾向 X，因为 …）
+**Decisions I need from you**
+1. <question>? Option A: … / Option B: … (I lean toward X because …)
 ```
 
-如果环境提供多选提问工具，"需要你定的"部分优先用它，并给出推荐项。
+If the environment provides a multiple-choice question tool, prefer it for the "decisions I need" part, with a recommended option.
 
-### 确认之后
+### After confirmation
 
-- 把确认后的版本当作**需求基线**，写进计划 / todo，后续所有验收都对照它。
-- 执行中发现基线有误或需要扩大范围：停下，说明变化和影响，重新确认后再继续。不要悄悄扩大或缩小范围。
-- 用户确认后，按计划一路推进，不要每一步都回来问"要继续吗"。只有遇到目标变化、不可逆操作、需要用户拍板的取舍时才停。
-- 用提问工具征询时，**超时或未作答不等于同意**：该项留在待拍板，只推进不依赖它的部分，并在下一次汇报里重新列出待定项，不要默默按推荐项开工。
+- Treat the confirmed version as the **requirement baseline**. Record it in the plan or the todo list; every later verification is judged against it.
+- If the baseline turns out to be wrong, or the scope must expand: stop, explain the change and its impact, re-confirm, and continue. Do not widen or narrow the scope silently.
+- After the user confirms, proceed through the plan without coming back to ask "shall I continue?" at every step. Stop only for a change of goal, an irreversible operation, or a trade-off the user must decide.
+- When using a question tool, **a timeout or an unanswered question is not consent**: leave that item pending, proceed only with the parts that do not depend on it, and list the pending items again in the next report. Do not quietly proceed on the recommended option.
 
-## 2. 分层计划
+## 2. Layered plan
 
-把任务拆成若干层（阶段），每层是一个可以独立验收的增量。每层写清三件事：
+Split the task into layers (stages); each layer is an increment that can be verified on its own. Each layer states three things:
 
-| 项 | 要求 |
+| Item | Requirement |
 |---|---|
-| 产出 | 这一层结束时具体多了什么 |
-| 完成条件 | 可检查的条件，例如"`npm test` 全绿""接口 X 对输入 Y 返回 Z""页面在 375px 宽度下无横向滚动""文件 A 中不再引用 B"。禁止"代码质量良好""基本可用"这类无法核验的描述 |
-| 验收方式 | 自检，或交给独立验收子代理（见 §3 判断标准） |
+| Output | What specifically exists at the end of this layer |
+| Completion criteria | Checkable conditions, e.g. "`npm test` is green", "interface X returns Z for input Y", "no horizontal scroll at 375px width", "file A no longer references B". Descriptions that cannot be checked — "good code quality", "basically works" — are forbidden |
+| Verification method | Self-check, or an independent verifier (see the criteria in §3) |
 
-- 计划本身如果涉及重要取舍（技术选型、架构、数据模型），先走一轮 §5 的挑刺再定稿。
-- 把计划简要展示给用户。对于已在复述阶段确认过的小计划，展示后直接开始，不必再等确认。
-- 任务较长时，把计划和进度写进 todo 或任务文件并随时更新，会话中断后可以从断点接着做。
-- **检查点**：每层验收通过就是一个检查点。未经用户同意不 `git commit`、不 `git push`；用户同意按层提交时，每层验收通过后提交一次，提交信息风格跟随项目已有习惯。
+- If the plan involves significant trade-offs (technology choice, architecture, data model), run one round of §5 adversarial review before finalizing it.
+- Show the plan to the user in brief. For a small plan already confirmed during restatement, start directly after showing it.
+- For long tasks, write the plan and progress into a todo list or task file and keep it updated, so work can resume from the breakpoint if the session is interrupted.
+- **Checkpoints**: each verified layer is a checkpoint. Do not `git commit` or `git push` without the user's consent. If the user agrees to commit per layer, commit once after each layer passes, following the project's existing commit message style.
 
-## 3. 逐层执行与验收
+## 3. Layer-by-layer execution and verification
 
-每层做完，先验收再进入下一层。验收不通过就修，修完重新验收；同一条件连续两次修不好，先停下来分析根因（并考虑是否要记入踩坑），不要在原地反复打补丁。
+Verify each layer before starting the next. If verification fails, fix it and verify again. If the same criterion fails twice in a row, stop and analyze the root cause first (and consider logging a pitfall) instead of patching in place.
 
-### 自检还是交给验收子代理
+### Self-check or an independent verifier
 
-满足任一条，交给**独立验收子代理**：
-- 这一层面向用户、改动面大或风险高；
-- 完成条件里有需要实际运行、操作、对比才能判断的项，而且不是一条命令就能判定；
-- 这是标准档任务的最终交付；
-- 你对自己的实现投入很深，容易"看什么都对"。
+Any one of these means you should hand verification to an **independent verifier**:
+- the layer is user-facing, the change surface is large, or the risk is high;
+- the completion criteria require actually running, operating or comparing things to judge, and not a single command;
+- it is the final delivery of a standard-tier task;
+- you are deeply invested in your own implementation and are likely to see everything as correct.
 
-可以自检：轻量档任务；或者改动小、条件能用一条命令直接判定、结果一目了然。
+Self-check is acceptable for: light-tier tasks; or small changes whose criteria a single command decides, with an obvious result.
 
-### 验收子代理的用法
+### Using the verifier
 
-验收者的价值在于独立：它不应该继承实现者的思路和自我辩护。
+The verifier's value lies in its independence: it must not inherit the implementer's reasoning or self-justification.
 
-- **给它**：需求基线、本层完成条件、相关文件路径、运行方式、改动范围（`git diff` 或提交范围）。改动范围是事实，不是思路，能帮它发现"该改却没改"的地方。
-- **不给它**：你的实现思路、取舍理由，或者"我觉得已经没问题了"之类的话。
-- **权限**：不修改源码、配置和文档；可以运行测试、构建、lint 等本地验证命令（由此产生的构建产物无妨）；禁止有外部副作用的命令——部署、数据迁移、`git commit` / `git push`、删除数据、调用生产或付费接口。
-- 要求它逐条实际核验（跑命令、读代码、看输出），每条给出 通过 / 不通过 / 无法核验 + 证据，并按严重程度列出完成条件之外它发现的问题。
-- 修复由你来做，以免验收者和实现者又变成同一个人。
-- 如果实现由 CLI 编程代理（omp / codex / claude-code）完成，验收按 skill `omp` 的「验收」节做：读它改的 diff、专找只覆盖 happy path 的条件分支、用 `--filter` 独立跑最小子集、返工给到「文件:行 + 判定条件 + 期望断言」。
-- 提示词模板见 [references/subagent-prompts.md](references/subagent-prompts.md) 的"验收子代理"。
+- **Give it**: the requirement baseline, this layer's completion criteria, the relevant file paths, how to run things, and the change range (`git diff` or a commit range). The change range is a fact, not a line of reasoning, and it helps the verifier find places that should have changed but did not.
+- **Do not give it**: your implementation reasoning, your trade-off justifications, or anything like "I think it's fine now".
+- **Permissions**: it may not modify source, configuration or documentation. It may run local verification commands (tests, builds, linters), and the resulting build artifacts are fine. Commands with external side effects are forbidden — deploying, data migration, `git commit` / `git push`, deleting data, calling production or paid APIs.
+- Require it to check every criterion for real (run the command, read the code, inspect the output) and to report **pass / fail / cannot verify** per item with evidence, plus any problems it found outside the criteria, ordered by severity.
+- Fixes are yours to make, so that the verifier and the implementer do not become the same person again.
+- If the implementation was done by a CLI coding agent (omp / codex / claude-code), verify according to the Verification section of the `omp` skill: read the diff it produced, look specifically for condition branches that only cover the happy path, run the smallest subset independently with `--filter`, and send rework back as "file:line + pass/fail criterion + expected assertion".
+- Prompt templates are in the "Verifier subagent" section of [references/subagent-prompts.md](references/subagent-prompts.md).
 
-如果当前环境没有子代理能力，或用户 / 宿主规则禁止使用子代理：自己切换成验收者角色，按同一模板逐条核验并写出证据，而不是凭印象打勾。
+If the current environment has no subagent capability, or the user or host rules forbid subagents: switch to the verifier role yourself, check every criterion against the same template, and write out the evidence, rather than ticking boxes from memory.
 
-### 处理验收结果
+### Handling verification results
 
-- **不通过的条件**：修复后重新验收（续用原验收者或派新的都可以）。
-- **认为验收者判错了**：必须拿出反证（命令 + 输出、文件:行号）才能推翻，并在汇报里写明推翻了哪条、依据是什么。不能只靠论证说服自己。
-- **条件之外发现的问题**：只有"严重"级——导致需求基线不满足、数据错误、崩溃、安全问题——阻塞进入下一层；其余记下来，在汇报中列出，或放进范围外建议。
+- **Failed criteria**: fix, then verify again (continue with the same verifier or dispatch a new one).
+- **You believe the verifier is wrong**: you must produce counter-evidence (a command and its output, a file:line) to overturn the verdict, and state in the report which verdict you overturned and on what basis. Do not talk yourself out of it by argument alone.
+- **Problems found outside the criteria**: only "severe" ones — failing the requirement baseline, wrong data, crashes, security issues — block the next layer. Record the rest and list them in the report, or move them into out-of-scope suggestions.
 
-### 证据规则
+### Evidence rules
 
-- 没有实际运行或检查过的，不能说"已完成""已通过"，只能说"已实现，未验证"。
-- 本地测试通过不等于用户验收通过；单元测试通过不等于功能可用。说清楚验证到了哪一层。
+- Anything not actually run or inspected may not be called "done" or "passing". The only permitted phrasing is "implemented, not verified".
+- Local tests passing is not user acceptance. Unit tests passing is not a working feature. State which level you actually verified.
 
-## 4. 收尾汇报
+## 4. Final report
 
-**标准档**，全部层完成后一次性汇报：
-
-```markdown
-**完成情况**：<对照需求基线逐条说明>
-**验证证据**：<跑了什么、结果是什么；哪些由验收子代理核验；推翻过哪些验收结论及依据>
-**未验证 / 已知局限**：<没测到的路径、已知不足>
-**自主决定的假设**：<仅自主执行模式：自行决定的点、跳过的不可逆操作>
-**挑刺结论**：<关键决策收到了哪些批评，采纳了哪些、驳回了哪些及理由>
-**范围外建议**：<§6 中需要用户拍板的提议，写清价值和代价>
-**新增 / 更新踩坑**：<本次写入的条目标题>
-```
-
-"未验证 / 已知局限"一栏必须保留；确实没有时写"无"并说明为什么有把握。其余各栏没有内容时可以省略。
-
-**轻量档**用精简版：
+**Standard tier**, one report after all layers are complete:
 
 ```markdown
-**做了什么**：<一两句>
-**怎么验证的**：<命令 + 结果>
-**已知局限**：<有才写>
+**Completion**: <each item of the requirement baseline, addressed in turn>
+**Verification evidence**: <what was run and what it returned; which items a verifier checked; which verification verdicts you overturned and on what basis>
+**Unverified / known limitations**: <paths not exercised, known gaps>
+**Self-made assumptions**: <autonomous mode only: what you decided yourself, which irreversible operations you skipped>
+**Critique outcome**: <which critiques the key decisions received, which were accepted and which rejected, and why>
+**Out-of-scope suggestions**: <proposals from §6 that need the user's decision, with value and cost>
+**New / updated pitfalls**: <titles of the entries written>
 ```
 
-汇报只陈述事实和证据，不写"完美实现""非常优雅""大幅提升"之类的自我评价。
+The "Unverified / known limitations" line is mandatory; when there genuinely are none, write "none" and explain why you are confident. The other lines may be omitted when empty.
 
-**长项目最容易被抱怨的是「黑盒进展」**：只报本次增量，用户就无法判断整体做到哪了。定期（或用户一问）交一份从 0 到现在的全景：阶段时间线与各阶段产出、代码/测试规模、证据链（哪些真跑过、哪些只是声称）、距交付或上架的差距矩阵。全景写成文档放进 `docs/`（或项目既有文档目录）长期保存，不要只留在聊天记录里；聊天里给结论与关键表，细节指向文档。
+**Light tier**, the short form:
 
-## 5. 决策挑刺
+```markdown
+**What was done**: <one or two sentences>
+**How it was verified**: <command + result>
+**Known limitations**: <only if any>
+```
 
-单一视角做出的决策，往往只看到了自己方案的好处。凡是需要评判的事，都先让它被认真反驳一次，再定论。
+The report states facts and evidence only. No self-assessment such as "perfectly implemented", "very elegant", "massive improvement".
 
-### 什么时候挑刺
+**What users complain about most on long projects is black-box progress**: reporting only this increment leaves them unable to judge where the whole thing stands. Periodically — or whenever asked — deliver a panorama from zero to now: stage timeline and each stage's output, code and test scale, the evidence chain (what actually ran versus what was merely claimed), and a gap matrix to delivery or release. Write the panorama into a document under `docs/` (or the project's existing documentation directory) and keep it; do not leave it only in the chat. In the chat, give the conclusion and the key table, and point to the document for detail.
 
-- 技术选型、架构、数据模型、接口设计；
-- 两个以上候选方案的取舍；
-- 不可逆或代价高的操作之前；
-- 大块实现开工前的计划；
-- 你准备宣称"这是最好的做法"时。
+## 5. Adversarial review of decisions
 
-日常小决定（命名、局部写法）不需要。
+A decision made from a single viewpoint usually sees only the benefits of its own option. Anything that needs judging should first be seriously attacked, then settled.
 
-### 怎么挑刺（按能力选用）
+### When to review adversarially
 
-1. **批评者子代理**：把方案和背景交给子代理，要求它只找问题——漏掉的场景、隐藏成本、更简单的替代方案、会在什么条件下失败。不要求它提出平衡意见，但要求标注严重程度和置信度。
-2. **多视角子代理**：重要决策可并行派出不同立场的审查者，各自独立给意见。默认挑 2–3 个与该决策最相关的立场，不必把所有立场都派一遍。
-3. **无子代理时的自我反驳**：分步骤明确写出——
-   - 反方最强论点：如果我是反对者，最有力的理由是什么；
-   - 事前验尸：假设三个月后这个决策被证明是错的，最可能的原因是什么；
-   - 被我否掉的方案，在什么条件下其实更好。
+- technology choice, architecture, data model, interface design;
+- a trade-off between two or more candidate approaches;
+- before an irreversible or expensive operation;
+- the plan for a large implementation, before work starts;
+- when you are about to claim "this is the best approach".
 
-提示词模板见 [references/subagent-prompts.md](references/subagent-prompts.md) 的"批评者子代理"和"多视角审查"。
+Everyday small decisions (naming, local style) do not need it.
 
-### 凝结结论
+### How, by capability
 
-收到批评后逐条处理：**采纳**（说明怎么改）或**驳回**（给出具体理由，不能只说"影响不大"）。低置信度的批评，能低成本验证的先验证再决定。最终结论要写明选择、理由、仍然存在的风险。一般一到两轮即可收敛，不要无限循环；如果批评暴露的是需要用户拍板的取舍，把选项和各自代价摆给用户。
+1. **Critic subagent**: hand the approach and its context to a subagent and ask it only to find problems — missed scenarios, hidden costs, simpler alternatives, conditions under which it fails. Do not ask for a balanced view, but require severity and confidence on each item.
+2. **Multi-perspective subagents**: for important decisions, dispatch reviewers with different stances in parallel, each giving an independent opinion. By default pick the 2–3 stances most relevant to the decision, not every stance.
+3. **Self-refutation when no subagent is available**: write out explicitly, step by step —
+   - the strongest opposing argument: if I were the opponent, what is the most powerful case;
+   - pre-mortem: assume that in three months this decision proved wrong — what is the most likely reason;
+   - the option I rejected: under what conditions would it actually be better.
 
-## 6. 主动推进
+Prompt templates are in the "Critic subagent" and "Multi-perspective review" sections of [references/subagent-prompts.md](references/subagent-prompts.md).
 
-你不只是执行者。推进过程中如果发现更好的思路、潜在隐患、顺手就能完成的改进，要主动处理，边界如下：
+### Converging
 
-- **范围内直接做**：属于已确认目标、可回滚、不改变用户可见行为或公共接口的改进（补缺失的测试、消除计划内模块的明显重复、补错误处理、补必要的注释）。做完在汇报里说明。
-- **顺手发现的 bug**：和当前任务是同一根因、不修它当前任务就不算完成的，属于范围内；其他 bug 哪怕很小，也列入范围外建议——修 bug 会改变行为，用户可能依赖现状，或者希望单独处理。
-- **范围外先提**：超出需求基线、改变产品行为、引入新依赖、代价明显、或不可逆的事，列入"范围外建议"，写清价值和代价，等用户拍板。
-- 主动做的事不能拖住主线：先保证主线按计划交付，再处理额外改进。
-- 当前层卡住、在等用户回复时，可以先推进不依赖该回复的其他工作，而不是空等。
+Handle each critique in turn: **accept** (state how it changes the approach) or **reject** (give a specific reason; "the impact is small" is not enough). For low-confidence critiques, verify cheaply where possible before deciding. The final conclusion states the choice, the reasoning, and the risks that remain. One or two rounds is usually enough — do not loop indefinitely. If a critique exposes a trade-off that only the user can settle, present the options and their costs to the user.
 
-## 7. 踩坑实时记录
+## 6. Proactive execution
 
-目的：同一个坑只踩一次，换会话、换人、换模型都能看到。
+You are not only an executor. If, while making progress, you find a better approach, a latent hazard, or an improvement that is cheap to make, act on it within these boundaries:
 
-### 什么算"坑"
+- **Inside the scope, just do it**: improvements that serve the confirmed goal, are reversible, and do not change user-visible behaviour or public interfaces (adding missing tests, removing obvious duplication within modules in the plan, adding error handling, adding necessary comments). Report them afterwards.
+- **Bugs found in passing**: if they share the root cause of the current task and the task is not complete without fixing them, they are in scope. Every other bug, however small, goes into out-of-scope suggestions — fixing a bug changes behaviour, and the user may depend on the current behaviour or want it handled separately.
+- **Outside the scope, propose first**: anything beyond the requirement baseline, anything that changes product behaviour, adds a dependency, is clearly costly, or is irreversible goes into "out-of-scope suggestions" with its value and cost, and waits for the user's decision.
+- Proactive work must not hold up the main line: deliver the main line as planned first, then handle the extra improvements.
+- While the current layer is blocked and waiting on the user, you may advance other work that does not depend on their reply instead of idling.
 
-- 花了明显多于预期的时间才定位的问题；
-- 根因不直观（环境差异、工具 / 库的隐藏行为、版本兼容、平台特性、编码问题）；
-- 一个看起来合理却被证明错误的假设或做法；
-- 文档没写、但这个项目里必须遵守的规矩。
+## 7. Real-time pitfall logging
 
-普通的拼写错误、一次就改对的小问题不算。
+Purpose: each pitfall is hit once. Across sessions, across people, across models, it stays visible.
 
-### 写到哪里：先分适用范围
+### What counts as a pitfall
 
-| 范围 | 判断 | 写入位置 |
+- a problem that took clearly longer than expected to locate;
+- a non-obvious root cause (environment differences, hidden tool or library behaviour, version compatibility, platform quirks, encoding issues);
+- an assumption or practice that looked reasonable and proved wrong;
+- a rule this project must follow that the documentation does not state.
+
+Ordinary typos and small problems fixed on the first attempt do not count.
+
+### Where to write: decide the scope first
+
+| Scope | Criterion | Location |
 |---|---|---|
-| 项目级 | 换台机器、换个人也会遇到：依赖、框架、构建、项目约定、数据与接口 | 项目根目录 `PITFALLS.md`，随仓库提交 |
-| 本机级 | 只和这台机器有关：本地 shell、路径、本机工具损坏、权限、代理设置 | `~/.agents/PITFALLS.local.md`，不进任何仓库 |
+| Project-level | Any machine or any person would hit it: dependencies, frameworks, builds, project conventions, data and interfaces | `PITFALLS.md` in the project root, committed with the repository |
+| Machine-level | Only this machine: local shell, paths, broken local tooling, permissions, proxy settings | `~/.agents/PITFALLS.local.md`, never committed to any repository |
 
-拿不准时按项目级写，并在"适用条件"里注明"可能与本机环境有关"。
+When unsure, write it as project-level and note "may be machine-specific" under applicability.
 
-### 何时写
+### When to write
 
-- 坑解决后**立刻**写，不要攒到最后——会话可能中断，攒着就丢了。
-- 发现了但暂时没解决：先写一条，状态标"未解决"，记下已排除的方向；解决后更新同一条。
-- 某条已有记录被证明不完整或过时：直接修改原条目，不要另起一条重复的。
+- Write **immediately** after the pitfall is solved; do not batch it for later — the session may be interrupted and batched notes are lost.
+- Found but not yet solved: write an entry first with status "unsolved" and record the directions already ruled out; update the same entry once solved.
+- An existing entry turns out to be incomplete or out of date: edit the original entry rather than adding a duplicate.
 
-### 怎么写
+### How to write
 
-- 文件不存在时，首次遇到坑就用 [references/pitfalls-template.md](references/pitfalls-template.md) 中对应的模板创建。
-- 每条包含：标题、日期、状态、适用范围、现象、根因、解决 / 规避方法、适用条件。写给一个完全没有当前上下文的人看。
-- 新条目追加到对应分类下。
-- **控制体积**：文件超过约 150 行或 20 条时，在顶部维护索引（每条一行：标题 + 分类），并把"已过时"条目移到文末的"归档"分类，保证开工时能快速扫读。
-- 不要写入密钥、令牌、个人隐私等敏感信息，用占位描述代替。
-- 写入后在当次回复中简要告诉用户"已记入 PITFALLS.md：<标题>"。
+- If the file does not exist, create it on the first pitfall using the matching template in [references/pitfalls-template.md](references/pitfalls-template.md).
+- Each entry contains: title, date, status, scope, symptom, root cause, fix / workaround, applicability. Write it for someone with none of your current context.
+- Append new entries under the matching category.
+- **Control the size**: once the file exceeds roughly 150 lines or 20 entries, maintain an index at the top (one line per entry: title + category) and move obsolete entries to an "Archive" category at the end, so that preflight reading stays fast.
+- Never write secrets, tokens or personal data into it; use placeholder descriptions instead.
+- After writing, briefly tell the user "logged to PITFALLS.md: <title>" in the current reply.
 
-### 让没加载本 skill 的代理也能看到
+### Making it visible to agents that did not load this skill
 
-只有本 skill 被触发时，代理才会主动去读 `PITFALLS.md`。首次创建项目级 `PITFALLS.md` 时，检查项目里有没有 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md` 等代理规则文件：有的话，**提议**在其中加一行"开工前先读根目录 PITFALLS.md"。这会改动项目文件，用户同意后再改；自主执行模式下不改，列入范围外建议。
+Only when this skill is triggered does an agent go and read `PITFALLS.md`. The first time a project-level `PITFALLS.md` is created, check whether the project has `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` or another agent rule file; if so, **propose** adding one line — "read PITFALLS.md in the repository root before starting work". This modifies a project file, so change it only after the user agrees; in autonomous mode do not change it, and list it as an out-of-scope suggestion instead.
 
-### 与交接文档的关系
+### Relationship to handoff documents
 
-如果同时使用 `project-handoff` 写交接：交接里的"踩坑与失败路径"只写本次会话相关的要点，并指向 `PITFALLS.md`；`PITFALLS.md` 才是项目长期的踩坑库。
+If `project-handoff` is also used: keep only the session-relevant points under "pitfalls and failure paths" in the handoff, and point to `PITFALLS.md`; `PITFALLS.md` is the project's long-term pitfall library.

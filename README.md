@@ -47,8 +47,6 @@ Other SKILL.md-compatible agents read from their own skills directory; on setups
 | "log this pitfall" / "update the pitfalls" (§7) | Pitfall entry only |
 | "just do it" / "don't ask me" | Autonomous mode: assumptions recorded and reported, irreversible operations still held |
 
-Chinese trigger phrases are registered as aliases (按流程来, 规范开发, 验收一下, 挑挑刺, 记一下踩坑).
-
 ## Layout
 
 ```
@@ -56,8 +54,7 @@ project-dev-workflow/
 ├── SKILL.md                          workflow, entry routing, evidence rules
 ├── references/
 │   ├── subagent-prompts.md           verifier, critic, multi-perspective, consolidation templates
-│   ├── pitfalls-template.md          PITFALLS.md and PITFALLS.local.md skeletons, entry format, examples
-│   └── zh-CN/                        Chinese originals (not loaded by agents)
+│   └── pitfalls-template.md          PITFALLS.md and PITFALLS.local.md skeletons, entry format, examples
 ├── LICENSE
 └── README.md
 ```

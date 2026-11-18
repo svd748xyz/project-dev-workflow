@@ -9,6 +9,14 @@ Two kinds of log, chosen by the scope of the pitfall (the criterion is in §7 of
 
 If the file does not exist yet, copy the content between the `---` markers in the matching template below to create it, then fill in the first entry. Add or remove categories as the situation requires; empty categories may be deleted.
 
+## Writing rules
+
+- Each entry contains: title, date, status, scope, symptom, root cause, fix / workaround, applicability (format below). Write it for a reader with none of your current context.
+- Append new entries under the matching category. Edit an existing entry rather than adding a near-duplicate.
+- **Size control**: once the file passes roughly 150 lines or 20 entries, maintain an index at the top (one line per entry: `- [category] title`) and move obsolete entries to "Archive" at the end, keeping the reason. Preflight then reads the index and only the relevant entries.
+- Never write secrets, tokens or personal data; describe them with placeholders.
+- **Handoff documents**: if a session handoff file is also kept (e.g. by a `project-handoff` skill), it carries only the session-relevant pitfalls and points to `PITFALLS.md`; `PITFALLS.md` stays the long-term library.
+
 ## Project-level template (PITFALLS.md)
 
 ---

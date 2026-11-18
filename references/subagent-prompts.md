@@ -1,6 +1,6 @@
 # Subagent prompt templates
 
-A subagent cannot see the current conversation, so all required context must be written into the prompt. Replace the angle-bracket placeholders as appropriate. None of the three subagent types modifies any file; the verifier may run local verification commands, while the critic and the reviewers are read-only.
+A subagent cannot see the current conversation, so all required context must be written into the prompt. Replace the angle-bracket placeholders as appropriate. None of the three subagent types modifies project files; the verifier may run local verification commands and create throwaway files outside the repository, while the critic and the reviewers are read-only.
 
 ## Verifier subagent
 
@@ -26,6 +26,7 @@ You are an independent verifier. Your job is to check a development deliverable 
 ## Permissions
 - Do not modify source code, configuration, documentation or any existing file.
 - You may run local verification commands: tests, builds, linters, type checks. Build artifacts produced by them are fine.
+- You may create throwaway files (e.g. a quick reproduction script) outside the repository or in an ignored scratch directory; delete them when done.
 - Commands with external side effects are forbidden: deploying, data migration, git commit / push / reset, deleting data, calling production or paid APIs.
 - When checking an item necessarily requires a forbidden operation, mark it "cannot verify" and explain why.
 
@@ -34,6 +35,8 @@ You are an independent verifier. Your job is to check a development deliverable 
 - Mark criteria you cannot check as "cannot verify" and state what is missing.
 - Be skeptical by default: your value is in finding problems, not in confirming that there are none.
 - Inspect the change range and look for places the requirement baseline called for changes that were never made.
+- Look for tests that were weakened, skipped or deleted in the change range, hard-coded results, and branches that only handle the happy path.
+- For a bug fix, confirm the original reproduction now passes, not just a new test written alongside the fix.
 - Additionally list problems you found outside the criteria, with severity:
   - severe: fails the requirement baseline, wrong data, crash, security issue;
   - moderate: missing edge-case handling, clear maintainability problem, deviation from project conventions;

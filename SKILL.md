@@ -1,277 +1,244 @@
 ---
 name: project-dev-workflow
-description: Development discipline for AI coding agents. Restate the request and get it confirmed before coding; split work into layers with checkable completion criteria and verify each layer before the next (independent verifier when warranted); attack key decisions with adversarial review or explicit self-refutation before committing to them; push forward inside the confirmed scope and propose anything outside it; log every pitfall to PITFALLS.md as it is solved. Use when starting or continuing non-trivial development work — multi-step features, bugs spanning several steps, refactors, architecture or approach choices — even if the user does not name this skill. Also use for standalone requests such as "follow the workflow", "run this properly", "verify this", "critique this plan", "log this pitfall", "update the pitfalls" running only the matching section. Skip for pure Q&A and trivial one-line edits.
+description: Development discipline for AI coding agents — confirm the request, plan in verifiable layers, verify with evidence (independent verifier for risky work), attack key decisions before committing to them, and log pitfalls to PITFALLS.md. Use for multi-step development work — features touching several files or steps, bugs that need investigation, refactors, architecture or approach choices. Also use alone for "follow the workflow", "run this properly", "verify this", "critique this plan", "log this pitfall", "update the pitfalls", running only the matching section. Skip for Q&A and single obvious edits.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Project Dev Workflow
 
-A working discipline applied throughout a development project. It addresses these failures: an AI starts coding on a misread request; finishes writing and then declares its own work fine; argues for a design from a single viewpoint; does only what it was told; and repeats a pitfall it already hit last time.
-
-The weight of the discipline should match the weight of the task: small tasks take the light tier — do not run a process for the process's sake.
-
-The whole workflow:
+A working discipline against five failures: coding on a misread request; declaring work done without running it; defending a design from one viewpoint; doing only what was named; repeating a pitfall that was already solved. Process is a cost, not a goal — match its weight to the task.
 
 ```
-Entry: single-section routing / tier decision (light · standard) / whether to work autonomously
-0. Preflight      — read the pitfall log and project rules, confirm workspace state
-1. Understand     — restate the request; act only after the user confirms
-2. Plan           — split into layers, each with checkable completion criteria
-3. Execute & verify — verify each layer by the criteria, self or via verifier; no pass, no next layer
-4. Report         — evidence, unverified items, accepted/rejected critiques, suggestions, new pitfalls
-Throughout: adversarial review (§5), proactive execution (§6), real-time pitfall logging (§7)
+Entry: route single-section requests · pick a tier · interactive or autonomous
+0. Preflight   — pitfall logs, project rules, workspace state
+1. Understand  — restate; wait for confirmation only when a trigger applies
+2. Plan        — layers with checkable completion criteria (bugs: reproduce first)
+3. Verify      — every layer, with evidence; independent verifier for risky work
+4. Report      — evidence, unverified items, assumptions, suggestions, pitfalls
+Throughout: adversarial review (§5), proactive execution (§6), pitfall logging (§7)
 ```
 
-## Entry: decide how to use it
+## Entry
 
-### Single-section invocation
+### Single-section requests
 
-When the user names one stage only, execute that section alone; do not run the whole workflow:
+When the user names one stage only, run that section alone:
 
-| User says | Execute |
+| User says | Run |
 |---|---|
 | critique / review this plan / is this approach OK | §5 only |
-| verify this / check whether it's correct | §3 verification only. The object is what the user specified; if the completion criteria are unclear, align on them with the user before verifying |
+| verify this / check whether it's correct | §3 verification only, on the object the user named. If the criteria are unclear, align on them first |
 | log this pitfall / update the pitfalls | §7 only |
-| follow the workflow / run this properly | the full workflow (standard tier) |
+| follow the workflow / run this properly | the full workflow, standard tier or higher |
 
-### Light and standard tiers
+Single-section runs do not declare a tier.
 
-Decide the tier before starting, and state which one you picked in one line in your first reply.
+### Tiers
 
-**Light tier** — all three conditions hold:
-- the request is unambiguous, with only one reasonable reading;
-- it can be rolled back easily, with no data deletion, public interfaces, or external impact;
-- the change is concentrated (one feature point, few files) and a single verification step decides the result.
+Pick a tier before starting and state it in one line in the first reply, e.g. `Tier: standard — touches API and UI`.
 
-The light tier skips restatement, layering and subagents, but still observes §0 preflight, the §3 evidence rules, and §7 pitfall logging, and closes with the short §4 report.
+| Tier | When | What it adds |
+|---|---|---|
+| **Light** | All hold: one reasonable reading; easily reversible (no data deletion, public interface or external impact); concentrated, and one check decides the result | §0 preflight, do it, verify with one real check, §7 if a pitfall appears, short report. No restatement or layering |
+| **Standard** | Everything that is neither light nor critical | Restatement (§1), layered plan (§2), self-verification with written evidence (§3), full report (§4) |
+| **Critical** | Any of: irreversible operation or external impact; data model, public interface or data migration change; change spanning several modules where a wrong direction is expensive; user-facing release | Confirmation before any edit, §5 review of the plan, independent verifier on risky layers and on the final delivery |
 
-**Standard tier**: everything else. When unsure, use the standard tier.
-
-If a light-tier task turns out to be more complex than judged (it drags in other modules, ambiguity appears, an irreversible operation is needed): upgrade to the standard tier immediately and do the restatement and confirmation retroactively.
+Unsure between two tiers: pick the higher. If a task outgrows its tier mid-way (drags in other modules, ambiguity appears, an irreversible step is needed, the same criterion fails twice), upgrade immediately and do the missing steps retroactively. The bug-reproduction rule (§2) applies in every tier.
 
 ### Autonomous mode
 
-When the user explicitly says "just do it / don't ask me / you decide", or the task is an unattended long run in a non-interactive environment:
+When the user explicitly says "just do it / don't ask me / you decide" (whichever other skill that wording also triggers), or the run is unattended:
 
-- §1 still writes out "my understanding", but does not wait for confirmation. Each item under "decisions I need from you" is decided by taking the recommended option, recorded as a **self-made assumption**, and work proceeds;
-- operations that are irreversible or have external impact (deleting data, deploying, pushing, data migration, paid API calls) are still **not** performed; skip them, list them in the report, and leave them for the user;
-- the final report lists every self-made assumption together, so the user can correct them afterwards.
+- §1 still writes out "my understanding" but does not wait. Each open decision takes the recommended option and is recorded as a **self-made assumption**.
+- Irreversible or external operations — deleting data, deploying, pushing, migrating data, paid API calls — are still **not** performed: skip them and list them in the report. Autonomous mode is not consent to `git commit` either; §2's commit rule still applies.
+- The final report lists every self-made assumption, so the user can correct them.
+- An instruction that only governs pacing once a plan is agreed ("keep going", "report at the end"), e.g. from an autonomous-execution skill, does not enable this mode. It removes check-ins between already-agreed steps; it does not skip the confirmation §1 requires, and the holds on irreversible operations and on commits still apply.
 
 ## 0. Preflight
 
-- **Pitfall log**: if the project root has `PITFALLS.md`, read it before planning; if the file maintains an index at the top, read the index first, then the entries relevant to the current task. If a machine-level log at `~/.agents/PITFALLS.local.md` exists, read that too (see §7 for scope). Mention task-relevant entries by name in the restatement or the plan.
-- **Project rules**: if the project has `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md` or similar rule files, follow them as well.
-- **Workspace state**: if the project is a git repository, check `git status` first. Uncommitted changes that already exist belong to the user: remember them, do not overwrite them, and do not mix them into your own changes. If it is not a git repository and the change is risky, warn the user first, or back up the files you are about to modify.
+- **Pitfall logs**: if the project root has `PITFALLS.md`, read it before planning — the index first if it has one, then the relevant entries. Also read `~/.agents/PITFALLS.local.md` if it exists. Cite task-relevant entries by title in the restatement or plan.
+- **Project rules**: follow `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `CONTRIBUTING.md` or similar files.
+- **Workspace state**: in a git repository, run `git status` first. Pre-existing uncommitted changes belong to the user: do not overwrite them or mix them into your changes. Outside git, warn before risky changes or back up the files you will touch.
+- **Specs** (only when the task rests on several specs, or specs revised more than once): scan for stale status markers (a "draft" that is already implemented), older specs with no "superseded by" pointer, and conflicting rules across documents. Raise conflicts before implementing; do not silently pick one. Give your review findings their own ID prefix so they never collide with the spec's IDs.
+
+### Files this skill writes
+
+- At any time, even before confirmation, announcing it the first time: `PITFALLS.md`, `~/.agents/PITFALLS.local.md`.
+- Once work has started, without asking, announcing it the first time: the plan/progress file for a long task (the host's todo/task facility if it has one, otherwise the project's existing notes or `docs/` location — name it in the report so the user can keep or delete it) and the panorama document (§4).
+- Throwaway files (scratch scripts, experiment output) go outside the repository or in an ignored scratch directory, and are removed when done.
+- Any other file outside the requirement baseline — editing an existing one (`AGENTS.md`, CI config, unrelated docs) or adding a new one — is an out-of-scope suggestion (§6): ask first.
 
 ## 1. Understand and confirm
 
-The user's wording usually omits context, mixes goals with means, and leaves constraints unstated. Coding to the literal wording and getting it wrong costs far more than one extra round of questions.
+Building the literal reading of a request and getting it wrong costs far more than one round of questions.
 
-### When restatement and confirmation are mandatory
+### When to wait for confirmation
 
-Any one of these makes restatement and confirmation mandatory (except in autonomous mode):
-- the request has two or more reasonable readings, and the readings lead to materially different outputs;
-- the user gave a goal rather than an instruction ("make login nicer");
-- the work involves irreversible operations, external impact, data deletion, or changes to public interfaces or the data model;
-- the change spans multiple modules, or is large enough that going in the wrong direction is expensive to undo.
+Wait for the user's confirmation before editing anything if any holds:
+- the request has two or more reasonable readings that lead to materially different results;
+- the user gave a goal, not an instruction ("make login nicer");
+- the task is critical tier.
 
-Light-tier tasks may be done directly, with an explanation afterwards. When unsure, treat it as "confirmation required".
+Unsure whether a request is ambiguous: treat it as ambiguous.
 
-### What you may do before confirmation
+Otherwise, in the standard tier, post the restatement and proceed; the user can interrupt. Decisions are handled by materiality, wherever they come up (restatement, plan, mid-task): a decision that would materially change the result means the request is ambiguous — ask it under "Decisions I need from you" and wait. A minor choice is not asked: record the recommended option under "My assumptions" and proceed; the user can override. Light tier skips restatement. Autonomous mode never waits (see Entry).
 
-You may do homework: read code and documentation, run read-only commands (inspect state, run existing tests, check versions). You may not: modify files, install dependencies, change configuration, or run any command with side effects.
+### Before confirmation
+
+Homework only: read code and docs, run read-only commands (state, versions), and run existing tests **only if they are known to be side-effect free** — no database writes, snapshot updates, fixture rewrites or network calls. No file edits (except pitfall logs), installs, configuration changes or other side effects.
 
 ### Restatement format
 
-Do the homework before restating. A restatement reconstructs the requirement in your own words; it is not a recital of the user's sentence. Expose your assumptions so the user can see at a glance where you have it wrong.
+Do the homework first. Reconstruct the requirement in your own words and expose your assumptions so the user can see at a glance where you are wrong.
 
 ```markdown
 **My understanding**
-- Goal: <the problem to solve / the effect to achieve, one or two sentences>
-- Deliverables: <what will exist at the end: files, features, documents…>
+- Goal: <the problem to solve / effect to achieve, one or two sentences>
+- Deliverables: <what will exist at the end>
 - In scope: <what you will do>
-- Out of scope: <what you explicitly will not do, to prevent scope creep>
-- Constraints: <stack, style, areas not to touch, time/resource limits>
+- Out of scope: <what you explicitly will not do>
+- Constraints: <stack, style, areas not to touch, limits>
 - Acceptance criteria: <how the user will decide it is done, as observable as possible>
-- My assumptions: <points not stated that you inferred yourself>
+- My assumptions: <points you inferred, not stated>
 
 **Decisions I need from you**
 1. <question>? Option A: … / Option B: … (I lean toward X because …)
 ```
 
-If the environment provides a multiple-choice question tool, prefer it for the "decisions I need" part, with a recommended option.
+If the environment has a multiple-choice question tool, prefer it for the decisions, with a recommended option.
 
 ### After confirmation
 
-- Treat the confirmed version as the **requirement baseline**. Record it in the plan or the todo list; every later verification is judged against it.
-- If the baseline turns out to be wrong, or the scope must expand: stop, explain the change and its impact, re-confirm, and continue. Do not widen or narrow the scope silently.
-- After the user confirms, proceed through the plan without coming back to ask "shall I continue?" at every step. Stop only for a change of goal, an irreversible operation, or a trade-off the user must decide.
-- When using a question tool, **a timeout or an unanswered question is not consent**: leave that item pending, proceed only with the parts that do not depend on it, and list the pending items again in the next report. Do not quietly proceed on the recommended option.
+- The confirmed version is the **requirement baseline**. Record it in the plan or todo list; every verification is judged against it.
+- If the baseline proves wrong or the scope must change: stop, explain the change and its impact, re-confirm. Never widen or narrow scope silently.
+- Then proceed through the plan without asking "shall I continue?" at each step. Stop only for a change of goal, an irreversible operation, or a trade-off only the user can make.
+- **A timeout or unanswered question is not consent** (this concerns questions you actually asked, i.e. material ones): leave that item pending, continue only with work that does not depend on it, and repeat the pending item in the next report.
 
 ## 2. Layered plan
 
-Split the task into layers (stages); each layer is an increment that can be verified on its own. Each layer states three things:
+Split the task into layers, each a verifiable increment, each stating:
 
 | Item | Requirement |
 |---|---|
-| Output | What specifically exists at the end of this layer |
-| Completion criteria | Checkable conditions, e.g. "`npm test` is green", "interface X returns Z for input Y", "no horizontal scroll at 375px width", "file A no longer references B". Descriptions that cannot be checked — "good code quality", "basically works" — are forbidden |
-| Verification method | Self-check, or an independent verifier (see the criteria in §3) |
+| Output | What specifically exists at the end of the layer |
+| Completion criteria | Checkable conditions: "`npm test` is green", "endpoint X returns Z for input Y", "no horizontal scroll at 375px", "file A no longer references B". Uncheckable wording — "good quality", "basically works" — is forbidden |
+| Verification | Self-check or independent verifier (criteria in §3) |
 
-- If the plan involves significant trade-offs (technology choice, architecture, data model), run one round of §5 adversarial review before finalizing it.
-- Show the plan to the user in brief. For a small plan already confirmed during restatement, start directly after showing it.
-- For long tasks, write the plan and progress into a todo list or task file and keep it updated, so work can resume from the breakpoint if the session is interrupted.
-- **Checkpoints**: each verified layer is a checkpoint. Do not `git commit` or `git push` without the user's consent. If the user agrees to commit per layer, commit once after each layer passes, following the project's existing commit message style.
+- **Bug fixes: the first layer is a reproduction** — a failing test, a command, or exact steps that show the bug. Change code only once it reproduces; the same reproduction passing is a completion criterion of the fix. If it cannot be reproduced, say so and agree on how to proceed instead of fixing blind.
+- Critical tier, a plan of four or more layers, or any significant trade-off (technology, architecture, data model): one round of §5 review before finalizing the plan.
+- Show the plan briefly, then start. If the plan raises a new material decision, ask and wait (§1); minor ones are recorded as assumptions.
+- Long tasks: keep plan and progress in a todo or task file so work can resume after an interruption.
+- **Checkpoints**: each verified layer is a checkpoint. No `git commit` or `git push` without the user's consent. If the user agrees to per-layer commits, commit after each passing layer in the project's existing message style.
 
-## 3. Layer-by-layer execution and verification
+## 3. Execute and verify
 
-Verify each layer before starting the next. If verification fails, fix it and verify again. If the same criterion fails twice in a row, stop and analyze the root cause first (and consider logging a pitfall) instead of patching in place.
+Verify each layer before starting the next. If a criterion fails, fix and re-verify. If the same criterion fails twice in a row, stop patching and find the root cause first (and consider a pitfall entry).
 
-### Self-check or an independent verifier
+### Who verifies
 
-Any one of these means you should hand verification to an **independent verifier**:
-- the layer is user-facing, the change surface is large, or the risk is high;
-- the completion criteria require actually running, operating or comparing things to judge, and not a single command;
-- it is the final delivery of a standard-tier task;
-- you are deeply invested in your own implementation and are likely to see everything as correct.
+Use an **independent verifier** when any holds:
+- final delivery of a critical-tier task (for a single-section "verify this": a change that would qualify as critical);
+- the layer is high-risk: security, data integrity, money, or a user-facing release;
+- judging a criterion needs a multi-step manual procedure (operating a UI flow, comparing outputs by eye) rather than commands with a clear pass/fail result;
+- the same criterion has already failed twice — by now your view of the code is shaped by your own fixes (this applies in every tier).
 
-Self-check is acceptable for: light-tier tasks; or small changes whose criteria a single command decides, with an obvious result.
+Otherwise self-verify, but write the evidence per criterion (command + output, or `file:line`) rather than ticking boxes from memory.
 
 ### Using the verifier
 
-The verifier's value lies in its independence: it must not inherit the implementer's reasoning or self-justification.
+Its value is independence. Use the "Verifier subagent" template in [references/subagent-prompts.md](references/subagent-prompts.md), which fixes its permissions (local tests and builds yes; edits, commits, deploys no) and its output (**pass / fail / cannot verify** per criterion with evidence).
 
-- **Give it**: the requirement baseline, this layer's completion criteria, the relevant file paths, how to run things, and the change range (`git diff` or a commit range). The change range is a fact, not a line of reasoning, and it helps the verifier find places that should have changed but did not.
-- **Do not give it**: your implementation reasoning, your trade-off justifications, or anything like "I think it's fine now".
-- **Permissions**: it may not modify source, configuration or documentation. It may run local verification commands (tests, builds, linters), and the resulting build artifacts are fine. Commands with external side effects are forbidden — deploying, data migration, `git commit` / `git push`, deleting data, calling production or paid APIs.
-- Require it to check every criterion for real (run the command, read the code, inspect the output) and to report **pass / fail / cannot verify** per item with evidence, plus any problems it found outside the criteria, ordered by severity.
-- Fixes are yours to make, so that the verifier and the implementer do not become the same person again.
-- If the implementation was done by a CLI coding agent (omp / codex / claude-code), verify according to the Verification section of the `omp` skill: read the diff it produced, look specifically for condition branches that only cover the happy path, run the smallest subset independently with `--filter`, and send rework back as "file:line + pass/fail criterion + expected assertion".
-- Prompt templates are in the "Verifier subagent" section of [references/subagent-prompts.md](references/subagent-prompts.md).
+- **Give it**: the requirement baseline, the layer's criteria, relevant paths, how to run things, and the change range (`git diff` or a commit range) — a fact that helps it spot places that should have changed but did not.
+- **Do not give it**: your implementation reasoning, trade-off justifications, or "I think it's fine now".
+- Fixes are yours, so verifier and implementer never become the same agent again.
 
-If the current environment has no subagent capability, or the user or host rules forbid subagents: switch to the verifier role yourself, check every criterion against the same template, and write out the evidence, rather than ticking boxes from memory.
+No subagent capability, or subagents forbidden: switch into the verifier role yourself, apply the same template, and write out the evidence.
 
-### Handling verification results
+### Work delegated to another coding agent
 
-- **Failed criteria**: fix, then verify again (continue with the same verifier or dispatch a new one).
-- **You believe the verifier is wrong**: you must produce counter-evidence (a command and its output, a file:line) to overturn the verdict, and state in the report which verdict you overturned and on what basis. Do not talk yourself out of it by argument alone.
-- **Problems found outside the criteria**: only "severe" ones — failing the requirement baseline, wrong data, crashes, security issues — block the next layer. Record the rest and list them in the report, or move them into out-of-scope suggestions.
+When another agent or CLI tool wrote the code, its "done" is a claim. Read the diff yourself; look for branches that only handle the happy path, tests that were weakened, skipped or deleted, and hard-coded results; re-run the narrowest relevant test subset yourself; send rework as `file:line` + the failed criterion + the expected assertion.
+
+### Handling results
+
+- **Failed criterion**: fix, then re-verify (same verifier or a new one).
+- **You think the verifier is wrong**: overturn the verdict only with counter-evidence (command + output, `file:line`), and say in the report which verdict you overturned and why. Argument alone is not enough.
+- **Problems outside the criteria**: only severe ones — failing the baseline, wrong data, crashes, security — block the next layer. List the rest in the report or as out-of-scope suggestions.
 
 ### Evidence rules
 
-- Anything not actually run or inspected may not be called "done" or "passing". The only permitted phrasing is "implemented, not verified".
-- Local tests passing is not user acceptance. Unit tests passing is not a working feature. State which level you actually verified.
+- Nothing not actually run or inspected may be called "done" or "passing". The permitted wording is "implemented, not verified".
+- Local tests passing is not user acceptance; unit tests passing is not a working feature. State which level you actually verified.
 
-## 4. Final report
+## 4. Report
 
-**Standard tier**, one report after all layers are complete:
+**Standard and critical tiers**, once all layers are done:
 
 ```markdown
-**Completion**: <each item of the requirement baseline, addressed in turn>
-**Verification evidence**: <what was run and what it returned; which items a verifier checked; which verification verdicts you overturned and on what basis>
+**Completion**: <each item of the requirement baseline, in turn>
+**Verification evidence**: <what ran and what it returned; what a verifier checked; verdicts you overturned and why>
 **Unverified / known limitations**: <paths not exercised, known gaps>
-**Self-made assumptions**: <autonomous mode only: what you decided yourself, which irreversible operations you skipped>
-**Critique outcome**: <which critiques the key decisions received, which were accepted and which rejected, and why>
-**Out-of-scope suggestions**: <proposals from §6 that need the user's decision, with value and cost>
-**New / updated pitfalls**: <titles of the entries written>
+**Self-made assumptions**: <decisions taken on the recommended option; in autonomous mode also the irreversible operations you skipped>
+**Pending decisions**: <questions still unanswered, and the work waiting on them>
+**Critique outcome**: <critiques received on key decisions; accepted / rejected and why>
+**Out-of-scope suggestions**: <§6 proposals needing the user's decision, with value and cost>
+**New / updated pitfalls**: <entry titles>
 ```
 
-The "Unverified / known limitations" line is mandatory; when there genuinely are none, write "none" and explain why you are confident. The other lines may be omitted when empty.
+"Unverified / known limitations" is mandatory; if there are none, write "none" and why you are confident. Omit other empty lines.
 
-**Light tier**, the short form:
+**Light tier**:
 
 ```markdown
 **What was done**: <one or two sentences>
-**How it was verified**: <command + result>
+**How it was verified**: <command + result, or what was inspected>
 **Known limitations**: <only if any>
+**Assumptions / skipped operations**: <only if any>
 ```
 
-The report states facts and evidence only. No self-assessment such as "perfectly implemented", "very elegant", "massive improvement".
+Facts and evidence only — no self-assessment such as "perfectly implemented" or "massive improvement".
 
-**What users complain about most on long projects is black-box progress**: reporting only this increment leaves them unable to judge where the whole thing stands. Periodically — or whenever asked — deliver a panorama from zero to now: stage timeline and each stage's output, code and test scale, the evidence chain (what actually ran versus what was merely claimed), and a gap matrix to delivery or release. Write the panorama into a document under `docs/` (or the project's existing documentation directory) and keep it; do not leave it only in the chat. In the chat, give the conclusion and the key table, and point to the document for detail.
+**Long projects** (many layers or sessions): periodically, or when asked, write a zero-to-now panorama so progress is never a black box. Format and rules: [references/panorama.md](references/panorama.md).
 
 ## 5. Adversarial review of decisions
 
-A decision made from a single viewpoint usually sees only the benefits of its own option. Anything that needs judging should first be seriously attacked, then settled.
+**When**: the plan of a critical-tier task or of four or more layers; technology choice, architecture, data model, interface design; a trade-off between candidate approaches; before an irreversible or expensive operation; whenever you are about to claim "this is the best approach". Not for naming or local style.
 
-### When to review adversarially
+**How, by capability**:
+1. **Critic subagent** — asked only to find problems (missed scenarios, hidden costs, failure conditions, simpler alternatives), each with severity and confidence.
+2. **Multi-perspective reviewers** — for important decisions, 2–3 stances most relevant to the decision, in parallel.
+3. **Self-refutation** when no subagent is available — write out explicitly: the strongest opposing case; a pre-mortem ("three months later this proved wrong — most likely why?"); the conditions under which the rejected option would be better.
 
-- technology choice, architecture, data model, interface design;
-- a trade-off between two or more candidate approaches;
-- before an irreversible or expensive operation;
-- the plan for a large implementation, before work starts;
-- when you are about to claim "this is the best approach".
+Templates and the consolidation table: [references/subagent-prompts.md](references/subagent-prompts.md).
 
-Everyday small decisions (naming, local style) do not need it.
-
-### How, by capability
-
-1. **Critic subagent**: hand the approach and its context to a subagent and ask it only to find problems — missed scenarios, hidden costs, simpler alternatives, conditions under which it fails. Do not ask for a balanced view, but require severity and confidence on each item.
-2. **Multi-perspective subagents**: for important decisions, dispatch reviewers with different stances in parallel, each giving an independent opinion. By default pick the 2–3 stances most relevant to the decision, not every stance.
-3. **Self-refutation when no subagent is available**: write out explicitly, step by step —
-   - the strongest opposing argument: if I were the opponent, what is the most powerful case;
-   - pre-mortem: assume that in three months this decision proved wrong — what is the most likely reason;
-   - the option I rejected: under what conditions would it actually be better.
-
-Prompt templates are in the "Critic subagent" and "Multi-perspective review" sections of [references/subagent-prompts.md](references/subagent-prompts.md).
-
-### Converging
-
-Handle each critique in turn: **accept** (state how it changes the approach) or **reject** (give a specific reason; "the impact is small" is not enough). For low-confidence critiques, verify cheaply where possible before deciding. The final conclusion states the choice, the reasoning, and the risks that remain. One or two rounds is usually enough — do not loop indefinitely. If a critique exposes a trade-off that only the user can settle, present the options and their costs to the user.
+**Converging**: handle each critique — **accept** (state the change) or **reject** (a specific reason; "the impact is small" is not one). Check low-confidence critiques cheaply before deciding. Conclude with the choice, the reasoning and the residual risk. One or two rounds is enough. A trade-off only the user can settle goes to the user with options and costs.
 
 ## 6. Proactive execution
 
-You are not only an executor. If, while making progress, you find a better approach, a latent hazard, or an improvement that is cheap to make, act on it within these boundaries:
+You are not only an executor. When you find a better approach, a latent hazard or a cheap improvement:
 
-- **Inside the scope, just do it**: improvements that serve the confirmed goal, are reversible, and do not change user-visible behaviour or public interfaces (adding missing tests, removing obvious duplication within modules in the plan, adding error handling, adding necessary comments). Report them afterwards.
-- **Bugs found in passing**: if they share the root cause of the current task and the task is not complete without fixing them, they are in scope. Every other bug, however small, goes into out-of-scope suggestions — fixing a bug changes behaviour, and the user may depend on the current behaviour or want it handled separately.
-- **Outside the scope, propose first**: anything beyond the requirement baseline, anything that changes product behaviour, adds a dependency, is clearly costly, or is irreversible goes into "out-of-scope suggestions" with its value and cost, and waits for the user's decision.
-- Proactive work must not hold up the main line: deliver the main line as planned first, then handle the extra improvements.
-- While the current layer is blocked and waiting on the user, you may advance other work that does not depend on their reply instead of idling.
+- **Inside scope, just do it, then report**: reversible changes that serve the confirmed goal without changing user-visible behaviour or public interfaces — missing tests, obvious duplication within planned modules, necessary comments, error handling that only surfaces failures more clearly (never swallows exceptions, adds retries or changes return values).
+- **Bugs found in passing**: in scope only if they share the current task's root cause and the task is incomplete without them. Any other bug, however small, is an out-of-scope suggestion — fixing changes behaviour someone may depend on.
+- **Outside scope, propose first**: anything beyond the baseline, changing product behaviour, adding a dependency, clearly costly or irreversible — list it with value and cost and wait.
+- Main line first; extras after. While blocked on the user, advance work that does not depend on the answer.
 
-## 7. Real-time pitfall logging
+## 7. Pitfall logging
 
-Purpose: each pitfall is hit once. Across sessions, across people, across models, it stays visible.
+Each pitfall should be hit once — across sessions, people and models.
 
-### What counts as a pitfall
+**What counts**: a problem that took clearly longer than expected to locate; a non-obvious root cause (environment, hidden tool or library behaviour, versions, platform, encoding); a reasonable-looking assumption that proved wrong; an unwritten rule this project must follow. Typos and first-attempt fixes do not count.
 
-- a problem that took clearly longer than expected to locate;
-- a non-obvious root cause (environment differences, hidden tool or library behaviour, version compatibility, platform quirks, encoding issues);
-- an assumption or practice that looked reasonable and proved wrong;
-- a rule this project must follow that the documentation does not state.
-
-Ordinary typos and small problems fixed on the first attempt do not count.
-
-### Where to write: decide the scope first
+**Where**:
 
 | Scope | Criterion | Location |
 |---|---|---|
-| Project-level | Any machine or any person would hit it: dependencies, frameworks, builds, project conventions, data and interfaces | `PITFALLS.md` in the project root, committed with the repository |
-| Machine-level | Only this machine: local shell, paths, broken local tooling, permissions, proxy settings | `~/.agents/PITFALLS.local.md`, never committed to any repository |
+| Project | Any machine or person would hit it: dependencies, frameworks, builds, conventions, data, interfaces | `PITFALLS.md` in the project root, meant to be committed |
+| Machine | Only this machine: local shell, paths, broken tooling, permissions, proxy | `~/.agents/PITFALLS.local.md`, never committed |
 
-When unsure, write it as project-level and note "may be machine-specific" under applicability.
+Unsure: project-level, noting "may be machine-specific" under applicability.
 
-### When to write
+**When**: immediately after solving it — batched notes are lost when a session dies. Found but unsolved: write it now with status `unsolved` and the directions ruled out, update it once solved. An existing entry is incomplete or stale: edit it, do not duplicate it.
 
-- Write **immediately** after the pitfall is solved; do not batch it for later — the session may be interrupted and batched notes are lost.
-- Found but not yet solved: write an entry first with status "unsolved" and record the directions already ruled out; update the same entry once solved.
-- An existing entry turns out to be incomplete or out of date: edit the original entry rather than adding a duplicate.
+**How**: entry format, file templates, size control and the handoff relationship are in [references/pitfalls-template.md](references/pitfalls-template.md). Never write secrets, tokens or personal data. After writing, tell the user `logged to PITFALLS.md: <title>`.
 
-### How to write
-
-- If the file does not exist, create it on the first pitfall using the matching template in [references/pitfalls-template.md](references/pitfalls-template.md).
-- Each entry contains: title, date, status, scope, symptom, root cause, fix / workaround, applicability. Write it for someone with none of your current context.
-- Append new entries under the matching category.
-- **Control the size**: once the file exceeds roughly 150 lines or 20 entries, maintain an index at the top (one line per entry: title + category) and move obsolete entries to an "Archive" category at the end, so that preflight reading stays fast.
-- Never write secrets, tokens or personal data into it; use placeholder descriptions instead.
-- After writing, briefly tell the user "logged to PITFALLS.md: <title>" in the current reply.
-
-### Making it visible to agents that did not load this skill
-
-Only when this skill is triggered does an agent go and read `PITFALLS.md`. The first time a project-level `PITFALLS.md` is created, check whether the project has `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` or another agent rule file; if so, **propose** adding one line — "read PITFALLS.md in the repository root before starting work". This modifies a project file, so change it only after the user agrees; in autonomous mode do not change it, and list it as an out-of-scope suggestion instead.
-
-### Relationship to handoff documents
-
-If `project-handoff` is also used: keep only the session-relevant points under "pitfalls and failure paths" in the handoff, and point to `PITFALLS.md`; `PITFALLS.md` is the project's long-term pitfall library.
+**First creation**: if the project has an agent rule file (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`…), *propose* adding one line — "read PITFALLS.md in the repository root before starting work" — so agents that never load this skill still see the log. Edit it only after the user agrees; in autonomous mode list it as a suggestion.
